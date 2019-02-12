@@ -1,6 +1,4 @@
-# Letters of Credit Network
-
-> This network tracks letters of credit from application through to closure.
+# Hermes Network Hyperledger Demo
 
 ## Models within this business network
 
