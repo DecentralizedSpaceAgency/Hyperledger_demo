@@ -1,0 +1,202 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+namespace org.example.loc
+
+//**********************/
+// ENUMS
+enum RequestStatus {
+  o AWAITING_APPROVAL
+  o APPROVED
+  o SEND_TO_STATION
+  o RECEIVED_BY_STATION
+  o SATELLITE_CONFIRMATION
+  o RECEIVING_DATA
+  o READY_FOR_PAYMENT
+  o REJECTED
+  o CLOSED
+}
+
+//**********************/
+// ASSETS
+asset ServiceRequest identified by requestId {
+  o String requestId
+  --> Customer applicant
+  --> Company beneficiary
+  --> Satellite issuingSatellite
+  o RequestDetails requestDetails
+  o String [] evidence
+  o String [] requestedData
+  o RequestStatus status
+  o String closeReason optional
+}
+
+//**********************/
+// PARTICIPANTS
+participant GroundStation identified by groundStationID {
+  o String groundStationID
+  o String name
+}
+
+participant Satellite identified by satelliteID {
+  o String satelliteID
+  o String name
+  o String [] excludedCountries
+}
+
+abstract participant Person identified by personId {
+  o String personId
+  o String name
+  o String lastName 
+  o String countryOfOrigin
+}
+
+participant Company extends Person {
+  o String companyName
+  --> Satellite satellite
+}
+
+participant Customer extends Person {
+}
+
+participant Regulator extends Person {
+}
+
+
+//**********************/
+// CONCEPTS
+concept Rule {
+  o String ruleId
+  o String ruleText
+}
+
+concept RequestDetails {
+  o String productType
+  o String targetCountry
+  o Integer lat
+  o Integer long
+  o Integer timestampRange
+}
+
+
+//**********************/
+// TRANSACTIONS + EVENTS
+transaction InitialApplication {
+  o String requestId
+  --> Customer applicant
+  --> Company beneficiary
+  --> Satellite issuingSatellite
+  o Rule[] rules
+  o RequestDetails requestDetails
+}
+
+event InitialApplicationEvent {
+  --> ServiceRequest loc
+}
+
+
+//**********************/-->Person
+transaction approveRequest {
+  --> ServiceRequest loc
+  --> Regulator approvingParty
+}
+
+event approveRequestEvent {
+  --> ServiceRequest loc
+  --> Regulator approvingParty
+}
+
+
+//**********************/
+transaction RejectRequest {
+  --> ServiceRequest loc
+  o String closeReason
+}
+
+event RejectRequestEvent {
+  --> ServiceRequest loc
+  o String closeReason
+}
+
+
+//**********************/
+transaction SendToGroundStation {
+  --> ServiceRequest loc
+  o String evidence
+}
+
+event SendToGroundStationEvent {
+  --> ServiceRequest loc
+}
+
+
+//**********************/
+transaction ReceivedByGroundStation {
+  --> ServiceRequest loc
+  o String evidence
+}
+
+event ReceivedByGroundStationEvent {
+  --> ServiceRequest loc
+}
+
+
+//**********************/
+transaction SatelliteConfirmation {
+  --> ServiceRequest loc
+  o String evidence
+}
+
+event SatelliteConfirmationEvent {
+  --> ServiceRequest loc
+}
+
+
+//**********************/
+transaction GroundStationDownload {
+  --> ServiceRequest loc
+  o String evidence
+  o String requestedData
+}
+
+event GroundStationDownloadEvent {
+  --> ServiceRequest loc
+}
+
+
+//**********************/
+transaction ReadyForPayment {
+  --> ServiceRequest loc
+}
+event ReadyForPaymentEvent {
+  --> ServiceRequest loc
+}
+
+
+//**********************/
+transaction Close {
+  --> ServiceRequest loc
+  o String closeReason
+}
+
+event CloseEvent {
+  --> ServiceRequest loc
+  o String closeReason
+}
+
+
+//**********************/
+// TRANSACTIONS FOR SETUP
+transaction CreateDemoParticipants {
+}
